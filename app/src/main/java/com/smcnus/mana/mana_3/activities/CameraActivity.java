@@ -28,7 +28,7 @@ public class CameraActivity extends AppCompatActivity {
     private File mOutputFile;
 
     private boolean isRecording = false;
-    private static final String TAG = "Recorder";
+    private static final String TAG = "mana_3";
     private Button captureButton;
 
     @Override
