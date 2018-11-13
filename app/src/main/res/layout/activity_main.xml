@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="10dp"
+    android:background="@color/white"
     android:orientation="vertical"
     tools:context=".activities.MainActivity">
 
-
-    <!--<Button-->
-    <!--android:id="@+id/button_toCamera"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_gravity="center"-->
-    <!--android:onClick="onClick"-->
-    <!--android:text="to Camera" />-->
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -54,6 +48,14 @@
             android:onClick="onClick"
             android:text="connect" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/button_isControl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:onClick="onClick"
+        android:text="Listening" />
 
     <LinearLayout
         android:layout_width="wrap_content"

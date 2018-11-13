@@ -21,7 +21,7 @@ public class CameraHelper {
 
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
-    public static File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/Research_Videos/");
+    public static File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Research_Videos/");
 
 
     /**
@@ -139,7 +139,7 @@ public class CameraHelper {
      * @param type Media type. Can be video or image.
      * @return A file object pointing to the newly created file.
      */
-    public static File getOutputMediaFile(int type) {
+    public static File getOutputMediaFile(int type,String videoTitle) {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
         if (!Environment.getExternalStorageState().equalsIgnoreCase(Environment.MEDIA_MOUNTED)) {
@@ -168,7 +168,7 @@ public class CameraHelper {
         } else if (type == MEDIA_TYPE_VIDEO) {
 //            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
 //                    "VID_" + timeStamp + ".mp4");
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator + "OMG_this_really_works.mp4");
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator + videoTitle+".mp4");
         } else {
             return null;
         }

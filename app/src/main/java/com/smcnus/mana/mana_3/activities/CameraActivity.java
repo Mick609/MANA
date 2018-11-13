@@ -1,5 +1,7 @@
 package com.smcnus.mana.mana_3.activities;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
@@ -30,6 +32,8 @@ public class CameraActivity extends AppCompatActivity {
     private boolean isRecording = false;
     private static final String TAG = "mana_3";
     private Button captureButton;
+    public static Activity activity;
+    public String videoTitle = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +47,19 @@ public class CameraActivity extends AppCompatActivity {
         mPreview = (TextureView) findViewById(R.id.surface_view);
         captureButton = (Button) findViewById(R.id.button_capture);
 
+        activity = this;
+
         Log.d(TAG, "Start the application");
+
+        Intent intent = getIntent();
+        videoTitle = intent.getExtras().getString("videoTitle");
+
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        onCaptureClick(captureButton);
     }
 
     /**
@@ -54,6 +70,7 @@ public class CameraActivity extends AppCompatActivity {
      * @param view the view generating the event.
      */
     public void onCaptureClick(View view) {
+        Log.d(TAG, "onCaptureClick");
         if (isRecording) {
             // BEGIN_INCLUDE(stop_release_media_recorder)
 
@@ -75,12 +92,14 @@ public class CameraActivity extends AppCompatActivity {
             isRecording = false;
             releaseCamera();
             // END_INCLUDE(stop_release_media_recorder)
-
+            finish();
         } else {
+            Log.d(TAG, "!isRecording");
 
             // BEGIN_INCLUDE(prepare_start_media_recorder)
 
-            new MediaPrepareTask().execute(null, null, null);
+//            new MediaPrepareTask().execute(null, null, null);
+            new MediaPrepareTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
             // END_INCLUDE(prepare_start_media_recorder)
 
@@ -132,13 +151,6 @@ public class CameraActivity extends AppCompatActivity {
         Camera.Parameters parameters = mCamera.getParameters();
         List<Camera.Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
         List<Camera.Size> mSupportedVideoSizes = parameters.getSupportedVideoSizes();
-        for (int i = 0; i < mSupportedPreviewSizes.size(); i++) {
-            Log.i(TAG, "mSupportedPreviewSizes: " + mSupportedPreviewSizes.get(i).width + ":" + mSupportedPreviewSizes.get(i).height);
-        }
-
-        for (int i = 0; i < mSupportedVideoSizes.size(); i++) {
-            Log.i(TAG, "mSupportedVideoSizes: " + mSupportedVideoSizes.get(i).width + ":" + mSupportedVideoSizes.get(i).height);
-        }
         Camera.Size optimalSize = CameraHelper.getOptimalVideoSize(mSupportedVideoSizes,
                 mSupportedPreviewSizes, mPreview.getWidth(), mPreview.getHeight());
         Log.i(TAG, "optimalSize: " + optimalSize.width + ":" + optimalSize.height);
@@ -179,7 +191,7 @@ public class CameraActivity extends AppCompatActivity {
         mMediaRecorder.setProfile(profile);
 
         // Step 4: Set output file
-        mOutputFile = CameraHelper.getOutputMediaFile(CameraHelper.MEDIA_TYPE_VIDEO);
+        mOutputFile = CameraHelper.getOutputMediaFile(CameraHelper.MEDIA_TYPE_VIDEO, videoTitle);
         if (mOutputFile == null) {
             return false;
         }
@@ -210,13 +222,16 @@ public class CameraActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... voids) {
             // initialize video camera
+            Log.d(TAG, "MediaPrepareTask");
             if (prepareVideoRecorder()) {
+                Log.d(TAG, "prepareVideoRecorder = true");
                 // Camera is available and unlocked, MediaRecorder is prepared,
                 // now you can start recording
                 mMediaRecorder.start();
 
                 isRecording = true;
             } else {
+                Log.d(TAG, "prepare didn't work, release the camera");
                 // prepare didn't work, release the camera
                 releaseMediaRecorder();
                 return false;

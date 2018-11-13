@@ -12,7 +12,9 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.smcnus.mana.mana_3.R;
@@ -29,10 +31,13 @@ public class MainActivity extends AppCompatActivity {
     private Context mContext;
     private TextView console;
     private TextView connection_text;
+    private Button isControlButton;
+    private LinearLayout mainLayout;
 
     private ServerNTP mServerNTP;
     private TcpClient mTcpClient;
     private Ping last_ping = new Ping(0);
+    private boolean isControl = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
 
         console = (TextView) findViewById(R.id.console);
         connection_text = (TextView) findViewById(R.id.connection);
+        isControlButton = (Button) findViewById(R.id.button_isControl);
+        mainLayout = (LinearLayout) findViewById(R.id.layout_main);
     }
 
     public void onClick(View v) {
@@ -71,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
 //                startActivity(intent);
 //                break;
             case R.id.button_connect:
+                if (mTcpClient != null) {
+                    mTcpClient.stopClient();
+                }
                 new ConnectTask().execute("");
                 break;
             case R.id.button_start:
@@ -90,9 +100,27 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "send message fail");
                 }
                 break;
+            case R.id.button_isControl:
+                isControl = !isControl;
+                if (isControl) {
+                    isControlButton.setText("I Have Control");
+                    mainLayout.setBackgroundColor(ContextCompat.getColor(mContext, R.color.darker_gray));
+                } else {
+                    isControlButton.setText("Listening");
+                    mainLayout.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
+                }
+                break;
             default:
                 break;
         }
+    }
+
+    private void reconnect() {
+        Log.d(TAG, "reconnect");
+        if (mTcpClient != null) {
+            mTcpClient.stopClient();
+        }
+        new ConnectTask().execute("");
     }
 
     public class ConnectTask extends AsyncTask<String, String, TcpClient> {
@@ -140,13 +168,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 String console_text = console.getText().toString();
                 console.setText(mServerNTP.getTrueTime().toString() + ": (Received)" + values[0] + "\n" + console_text);
+                responseListener(values[0]);
             }
-
-//            Intent intent;
-//            intent = new Intent(MainActivity.this
-//                    , CameraActivity.class);
-//            startActivity(intent);
-
         }
 
         Handler mHandler = new Handler();
@@ -179,6 +202,30 @@ public class MainActivity extends AppCompatActivity {
 
         void stopRepeatingTask() {
             mHandler.removeCallbacks(mHandlerTask);
+        }
+
+        void responseListener(String response) {
+            String[] msg = response.split(",");
+            if (!isControl) {
+                switch (msg[0]) {
+                    case "start":
+                        String videoTitle = msg[1] + "," + msg[2] + "," + msg[3];
+                        Log.d(TAG, "Start recording for  " + videoTitle);
+                        Intent intent;
+                        intent = new Intent(MainActivity.this
+                                , CameraActivity.class);
+                        intent.putExtra("videoTitle", videoTitle);
+                        startActivity(intent);
+                        break;
+                    case "stop":
+                        if (CameraActivity.activity != null) {
+                            CameraActivity.activity.finish();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 }
